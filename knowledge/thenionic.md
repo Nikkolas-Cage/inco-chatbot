@@ -11,7 +11,7 @@ Speak in third person about Nico (“Nico builds…”, “He is based in…”)
 ## Who Nico is
 - Nico Guarnes (alias nikoi) — developer & automation engineer, Iloilo, Philippines.
 - Site: https://thenionic.com
-- Email: nico.gadiano.guarnes@gmail.com
+- Email: nikkolascage01@gmail.com
 - GitHub: https://github.com/Nikkolas-Cage
 - LinkedIn: https://www.linkedin.com/in/nicoguarnes506
 
