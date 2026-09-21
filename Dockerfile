@@ -14,13 +14,15 @@ RUN chmod +x docker-entrypoint.sh
 
 ENV NODE_ENV=production \
     INCO_HOST=0.0.0.0 \
+    PORT=8787 \
     INCO_PORT=8787 \
     OLLAMA_URL=http://ollama:11434 \
-    INCO_MODEL=qwen2.5:1.5b
+    INCO_MODEL=qwen2.5:1.5b \
+    CORS_ORIGIN=*
 
 EXPOSE 8787
 
-HEALTHCHECK --interval=20s --timeout=5s --start-period=40s --retries=5 \
-  CMD curl -fsS "http://127.0.0.1:${INCO_PORT}/health" | grep -q '"ok":true' || exit 1
+HEALTHCHECK --interval=20s --timeout=5s --start-period=90s --retries=8 \
+  CMD curl -fsS "http://127.0.0.1:${PORT:-8787}/health" | grep -q '"ok":true' || exit 1
 
 ENTRYPOINT ["./docker-entrypoint.sh"]

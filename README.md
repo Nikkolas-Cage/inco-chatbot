@@ -1,64 +1,168 @@
 # Inco AI
 
-Fast local open-weight chatbot for **thenionic** (Nico Guarnes).
+Fast open-weight chatbot for **[thenionic](https://thenionic.com)** (Nico Guarnes).  
+API wrapper around [Ollama](https://ollama.com) · default model **`qwen2.5:1.5b`**.
 
-## Model
+Public API (when running): **`http://HOST:8787`**
 
-Default: **`qwen2.5:1.5b`** via [Ollama](https://ollama.com).
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/health` | Ready check |
+| `POST` | `/v1/chat` | Chat |
+
+---
+
+## One-click run (Docker)
+
+**Requires:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine + Compose).
 
 ```bash
-# smaller / faster
-INCO_MODEL=qwen2.5:0.5b docker compose up -d --build
+git clone https://github.com/Nikkolas-Cage/inco-chatbot.git
+cd inco-chatbot
+docker compose up -d --build
 ```
 
-## Docker (recommended)
+First boot pulls the model (a few minutes). Then:
 
 ```bash
-cd /path/to/inco-ai
-docker compose up -d --build
-# first boot pulls the model into the ollama volume — can take a few minutes
-
 curl http://127.0.0.1:8787/health
 ```
 
-Services:
-- **inco** → `http://127.0.0.1:8787` (API)
-- **ollama** → `http://127.0.0.1:11434`
+You should see `"ok":true` and `"modelReady":true`.
 
-Stop: `docker compose down`  
-Wipe models: `docker compose down -v`
+| Service | Port | Public? |
+|---------|------|---------|
+| **Inco API** | **8787** | **Yes — expose this** |
+| Ollama | 11434 | Internal only (not published) |
 
-Point thenionic at it:
+Stop:
 
 ```bash
-# thenionic .env.local
-INCO_AI_URL=http://127.0.0.1:8787
+docker compose down
 ```
 
-## Local (without Docker)
+Wipe model cache:
 
 ```bash
-brew install ollama
+docker compose down -v
+```
+
+### Smaller / faster model
+
+```bash
+INCO_MODEL=qwen2.5:0.5b docker compose up -d --build
+```
+
+### Custom host port
+
+```bash
+# map host 8080 → container 8787
+INCO_PUBLISH_PORT=8080 docker compose up -d --build
+curl http://127.0.0.1:8080/health
+```
+
+---
+
+## Deploy publicly
+
+Inco listens on **`0.0.0.0:8787`** inside Docker. Point your host / reverse proxy / cloud port at **8787** (or `INCO_PUBLISH_PORT`).
+
+### VPS (recommended)
+
+```bash
+git clone https://github.com/Nikkolas-Cage/inco-chatbot.git
+cd inco-chatbot
+docker compose up -d --build
+
+# open firewall (example)
+# ufw allow 8787/tcp
+```
+
+Put HTTPS in front (Caddy / Nginx / Cloudflare Tunnel), e.g. `https://inco.yourdomain.com` → `127.0.0.1:8787`.
+
+### Environment
+
+| Variable | Default | Notes |
+|----------|---------|--------|
+| `PORT` / `INCO_PORT` | `8787` | Listen port inside the container |
+| `INCO_HOST` | `0.0.0.0` | Bind all interfaces (required for public) |
+| `INCO_PUBLISH_PORT` | `8787` | Host port published by Compose |
+| `OLLAMA_URL` | `http://ollama:11434` | Internal Ollama service |
+| `INCO_MODEL` | `qwen2.5:1.5b` | Ollama model tag |
+| `CORS_ORIGIN` | `*` | Optional allowlist (comma-separated) |
+
+Copy `.env.example` → `.env` if you want local overrides.
+
+### thenionic
+
+```bash
+# thenionic .env / production
+INCO_AI_URL=https://inco.yourdomain.com
+# or local:
+# INCO_AI_URL=http://127.0.0.1:8787
+```
+
+---
+
+## API
+
+### `GET /health`
+
+```json
+{
+  "ok": true,
+  "name": "Inco AI",
+  "model": "qwen2.5:1.5b",
+  "modelReady": true
+}
+```
+
+### `POST /v1/chat`
+
+```bash
+curl -s http://127.0.0.1:8787/v1/chat \
+  -H 'Content-Type: application/json' \
+  -d '{"messages":[{"role":"user","content":"What does Nico build?"}]}'
+```
+
+```json
+{
+  "ok": true,
+  "reply": "...",
+  "provider": "inco",
+  "model": "qwen2.5:1.5b",
+  "ms": 420
+}
+```
+
+---
+
+## Local (no Docker)
+
+```bash
+brew install ollama   # or https://ollama.com/download
 ollama serve
-npm run pull
+ollama pull qwen2.5:1.5b
 npm start
 # → http://127.0.0.1:8787
 ```
 
-## API
+For LAN / public bind without Docker:
 
-`POST /v1/chat`
-
-```json
-{
-  "messages": [
-    { "role": "user", "content": "What does Nico build?" }
-  ]
-}
+```bash
+INCO_HOST=0.0.0.0 INCO_PORT=8787 npm start
 ```
 
-Health: `GET /health`
+---
 
-## thenionic integration
+## Repo layout
 
-The portfolio server calls Inco first at `INCO_AI_URL`. If Inco is down, thenionic falls back and logs the miss to admin inquiries.
+```
+Dockerfile            # Inco Node API
+docker-compose.yml    # ollama + inco (one command)
+docker-entrypoint.sh  # wait for Ollama, pull model, start
+server.js             # HTTP API
+knowledge/thenionic.md
+```
+
+MIT-ready for personal portfolio use. Keep Ollama off the public internet — only expose **Inco :8787**.

@@ -6,12 +6,13 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js",
+    "dev": "INCO_HOST=0.0.0.0 node server.js",
     "pull": "ollama pull qwen2.5:1.5b",
     "setup": "ollama pull qwen2.5:1.5b",
     "docker:up": "docker compose up -d --build",
     "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f inco"
+    "docker:logs": "docker compose logs -f inco",
+    "one-click": "docker compose up -d --build && echo 'Inco → http://127.0.0.1:8787/health'"
   },
   "engines": {
     "node": ">=18"

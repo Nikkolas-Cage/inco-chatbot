@@ -4,8 +4,9 @@ services:
     container_name: inco-ollama
     volumes:
       - inco_ollama:/root/.ollama
-    ports:
-      - "11434:11434"
+    # Internal only — do not publish 11434 publicly
+    expose:
+      - "11434"
     restart: unless-stopped
     # Uncomment on Linux hosts with NVIDIA:
     # deploy:
@@ -22,13 +23,30 @@ services:
     depends_on:
       - ollama
     environment:
+      # 0.0.0.0 required for Docker / public deploy
       INCO_HOST: "0.0.0.0"
-      INCO_PORT: "8787"
+      # Platforms often inject PORT — prefer that, else 8787
+      INCO_PORT: "${PORT:-8787}"
+      PORT: "${PORT:-8787}"
       OLLAMA_URL: "http://ollama:11434"
       INCO_MODEL: "${INCO_MODEL:-qwen2.5:1.5b}"
+      CORS_ORIGIN: "${CORS_ORIGIN:-*}"
     ports:
-      - "8787:8787"
+      # Public API — change host side with INCO_PUBLISH_PORT
+      - "${INCO_PUBLISH_PORT:-8787}:${PORT:-8787}"
     restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-fsS",
+          "http://127.0.0.1:${PORT:-8787}/health",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 8
+      start_period: 90s
 
 volumes:
   inco_ollama:
