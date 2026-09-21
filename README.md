@@ -12,17 +12,15 @@ Public API (when running): **`http://HOST:8787`**
 
 ---
 
-## One-click run (Docker)
+## One command run (Docker)
 
 **Requires:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine + Compose).
 
 ```bash
-git clone https://github.com/Nikkolas-Cage/inco-chatbot.git
-cd inco-chatbot
-docker compose up -d --build
+git clone https://github.com/Nikkolas-Cage/inco-chatbot.git && cd inco-chatbot && docker compose up -d --build
 ```
 
-First boot pulls the model (a few minutes). Then:
+That one command clones, builds, starts Inco + Ollama, and publishes **`:8787`**. First boot pulls the model (a few minutes). Then:
 
 ```bash
 curl http://127.0.0.1:8787/health
@@ -70,12 +68,8 @@ Inco listens on **`0.0.0.0:8787`** inside Docker. Point your host / reverse prox
 ### VPS (recommended)
 
 ```bash
-git clone https://github.com/Nikkolas-Cage/inco-chatbot.git
-cd inco-chatbot
-docker compose up -d --build
-
-# open firewall (example)
-# ufw allow 8787/tcp
+git clone https://github.com/Nikkolas-Cage/inco-chatbot.git && cd inco-chatbot && docker compose up -d --build
+# open firewall (example): ufw allow 8787/tcp
 ```
 
 Put HTTPS in front (Caddy / Nginx / Cloudflare Tunnel), e.g. `https://inco.yourdomain.com` → `127.0.0.1:8787`.
