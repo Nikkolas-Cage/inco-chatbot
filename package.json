@@ -1,0 +1,19 @@
+{
+  "name": "inco-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Inco AI — fast local open-weight assistant for thenionic.com",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "pull": "ollama pull qwen2.5:1.5b",
+    "setup": "ollama pull qwen2.5:1.5b",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f inco"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

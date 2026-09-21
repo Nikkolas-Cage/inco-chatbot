@@ -1,0 +1,34 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: inco-ollama
+    volumes:
+      - inco_ollama:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+    # Uncomment on Linux hosts with NVIDIA:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  inco:
+    build: .
+    container_name: inco-ai
+    depends_on:
+      - ollama
+    environment:
+      INCO_HOST: "0.0.0.0"
+      INCO_PORT: "8787"
+      OLLAMA_URL: "http://ollama:11434"
+      INCO_MODEL: "${INCO_MODEL:-qwen2.5:1.5b}"
+    ports:
+      - "8787:8787"
+    restart: unless-stopped
+
+volumes:
+  inco_ollama:
